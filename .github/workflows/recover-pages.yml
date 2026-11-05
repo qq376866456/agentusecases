@@ -6,28 +6,25 @@ on:
     paths: ['.github/workflows/recover-pages.yml']
 permissions:
   pages: write
+  deployments: write
 jobs:
   recover:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: 核对并取消已确认卡住的首次部署
+      - name: 清理已失败且已取消的首次部署记录
         uses: actions/github-script@v8
         with:
           script: |
-            const args = {...context.repo, pages_deployment_id: '0af07cb5e6d98ba8a8d5e2b69ba67fd3beb24911'};
-            const site = await github.request('GET /repos/{owner}/{repo}/pages', context.repo);
-            core.info('站点状态：' + JSON.stringify(site.data));
-            const status = async () => {
-              try {
-                const r = await github.request('GET /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}', args);
-                core.info('部署状态：' + JSON.stringify(r.data));
-              } catch (error) { core.info('查询状态：' + error.status + ' ' + error.message); }
-            };
-            await status();
-            const canceled = await github.request('POST /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}/cancel', args);
-            core.info('取消返回：' + canceled.status + ' ' + JSON.stringify(canceled.data));
-            for (let i = 0; i < 6; i++) {
-              await new Promise(resolve => setTimeout(resolve, 10000));
-              await status();
+            const args = {...context.repo, deployment_id: 7567342498};
+            const expectedSha = '0af07cb5e6d98ba8a8d5e2b69ba67fd3beb24911';
+            const {data: deployment} = await github.rest.repos.getDeployment(args);
+            const {data: statuses} = await github.rest.repos.listDeploymentStatuses(args);
+            const {data: pagesStatus} = await github.request('GET /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}', {...context.repo, pages_deployment_id: expectedSha});
+            if (deployment.sha !== expectedSha || deployment.environment !== 'github-pages' ||
+                statuses[0]?.state !== 'failure' || pagesStatus.status !== 'deployment_cancelled') {
+              throw new Error('部署状态与预期不符，停止清理。');
             }
+            await github.rest.repos.createDeploymentStatus({...args, state: 'inactive', description: '清理已取消的首次 Pages 部署残留', auto_inactive: false});
+            await github.rest.repos.deleteDeployment(args);
+            core.info('已清理指定失败部署记录，代码和站点设置保持不变。');
