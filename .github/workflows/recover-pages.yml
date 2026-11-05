@@ -11,15 +11,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
-      - name: 取消已确认卡住的首次部署
+      - name: 核对并取消已确认卡住的首次部署
         uses: actions/github-script@v8
         with:
           script: |
             const args = {...context.repo, pages_deployment_id: '0af07cb5e6d98ba8a8d5e2b69ba67fd3beb24911'};
-            try {
-              await github.request('POST /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}/cancel', args);
-              core.info('已取消首次部署残留。');
-            } catch (error) {
-              if (error.status === 404) core.info('旧部署已不存在，无需清理。');
-              else throw error;
+            const site = await github.request('GET /repos/{owner}/{repo}/pages', context.repo);
+            core.info('站点状态：' + JSON.stringify(site.data));
+            const status = async () => {
+              try {
+                const r = await github.request('GET /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}', args);
+                core.info('部署状态：' + JSON.stringify(r.data));
+              } catch (error) { core.info('查询状态：' + error.status + ' ' + error.message); }
+            };
+            await status();
+            const canceled = await github.request('POST /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}/cancel', args);
+            core.info('取消返回：' + canceled.status + ' ' + JSON.stringify(canceled.data));
+            for (let i = 0; i < 6; i++) {
+              await new Promise(resolve => setTimeout(resolve, 10000));
+              await status();
             }
