@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "lastCollectedAt": "2026-11-05T06:59:36.893Z",
+  "lastCollectedAt": "2026-11-05T07:14:37.741Z",
   "status": "ok",
   "sources": [
     {
       "id": "hn",
       "name": "Hacker News",
       "status": "ok",
-      "matched": 24,
+      "matched": 25,
       "failed": 0
     },
     {
@@ -20,6 +20,24 @@
   ],
   "translationStatus": "not_configured",
   "items": [
+    {
+      "id": "feed-ef93f1ef6374c6f66fc3",
+      "originalTitle": "My Agentic Coding Setup, July 2026 – Domenic Denicola",
+      "title": "My Agentic Coding Setup, July 2026 – Domenic Denicola",
+      "source": "https://domenic.me/agentic-coding-setup/",
+      "sourceName": "Hacker News",
+      "sourceId": "hn",
+      "discussion": "https://news.ycombinator.com/item?id=50376034",
+      "publishedAt": "2026-11-05T07:00:41.000Z",
+      "collectedAt": "2026-11-05T07:14:37.741Z",
+      "type": "采集线索",
+      "agent": "通用智能体",
+      "category": "软件开发",
+      "description": "来自 Hacker News 的公开条目。尚未核验实际效果，点击查看原文。",
+      "detail": "自动采集仅使用公开标题、链接与发布时间，没有读取完整文章。该条目可能是工具发布、讨论或实践分享，需要阅读原文判断。",
+      "limit": "自动收录不代表推荐或成功验证；工具和场景标签由标题关键词推断。",
+      "translation": "pending"
+    },
     {
       "id": "feed-bac50956e6e8be5d90a0",
       "originalTitle": "Adversarial Speculative Reasoning Improves Long Horizon Agents",
