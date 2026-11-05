@@ -1,0 +1,25 @@
+name: 清理首次部署残留
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/recover-pages.yml']
+permissions:
+  pages: write
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: 取消已确认卡住的首次部署
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const args = {...context.repo, pages_deployment_id: '0af07cb5e6d98ba8a8d5e2b69ba67fd3beb24911'};
+            try {
+              await github.request('POST /repos/{owner}/{repo}/pages/deployments/{pages_deployment_id}/cancel', args);
+              core.info('已取消首次部署残留。');
+            } catch (error) {
+              if (error.status === 404) core.info('旧部署已不存在，无需清理。');
+              else throw error;
+            }
